@@ -2,22 +2,27 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Web App Container</title>
   <style>
-    /* 1. Pengaturan Dasar Layout */
+    /* 1. Reset Total & Pengaturan Layar Penuh Responsive */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     html, body {
       margin: 0 !important;
       padding: 0 !important;
       width: 100% !important;
       height: 100% !important;
-      height: 100dvh !important; /* Adaptif untuk layar mobile modern */
+      height: 100dvh !important; /* Adaptif untuk browser mobile modern */
       overflow: hidden !important;
       background-color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* 2. Container Penampung Utama */
+    /* 2. Container Utama */
     .webapp-container {
       position: fixed;
       top: 0;
@@ -33,7 +38,7 @@
       background-color: #ffffff;
     }
 
-    /* 3. Animasi Loading Spinner (Tampil saat memuat) */
+    /* 3. Layout Loading Spinner */
     .loader-wrapper {
       position: absolute;
       top: 50%;
@@ -42,13 +47,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 16px;
       z-index: 1;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    /* Menyembunyikan loader secara halus lewat JS */
+    .loader-wrapper.hidden {
+      opacity: 0;
+      visibility: hidden;
     }
 
     .spinner {
-      width: 45px;
-      height: 45px;
+      width: 42px;
+      height: 42px;
       border: 4px solid #e2e8f0;
       border-top: 4px solid #3b82f6;
       border-radius: 50%;
@@ -59,11 +71,11 @@
       color: #64748b;
       font-size: 14px;
       font-weight: 500;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       animation: pulse 1.5s ease-in-out infinite;
     }
 
-    /* 4. Style untuk Iframe + Animasi Masuk */
+    /* 4. Style Iframe dengan Efek Animasi Masuk */
     .webapp-container iframe {
       width: 100%;
       height: 100%;
@@ -72,32 +84,32 @@
       padding: 0;
       display: block;
       position: relative;
-      z-index: 2; /* Berada di atas loader */
-      background: transparent;
-      
-      /* Animasi Slide-Up & Fade-In saat iframe selesai dimuat */
-      animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      z-index: 2;
+      opacity: 0; /* Tersembunyi sebelum memuat */
+      transition: opacity 0.5s ease;
     }
 
-    /* 5. Keyframes (Definisi Gerakan Animasi) */
-    
-    /* Animasi Putaran Spinner */
+    /* Kelas animasi yang dipicu via JavaScript saat iframe siap */
+    .webapp-container iframe.loaded {
+      opacity: 1;
+      animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* 5. Keyframe Animasi */
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
-    /* Animasi Berdenyut Teks Loading */
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
 
-    /* Animasi Kemunculan Web App (Slide Up + Fade In) */
     @keyframes slideUpFade {
       from {
         opacity: 0;
-        transform: translateY(20px) scale(0.99);
+        transform: translateY(15px) scale(0.99);
       }
       to {
         opacity: 1;
@@ -109,19 +121,31 @@
 <body>
 
   <div class="webapp-container">
-    <!-- Indikator Loading dengan Animasi Spinner -->
-    <div class="loader-wrapper">
+    <!-- Indikator Loading -->
+    <div class="loader-wrapper" id="loader">
       <div class="spinner"></div>
       <div class="loader-text">Memuat Aplikasi...</div>
     </div>
 
     <!-- Frame Google Apps Script -->
     <iframe 
+      id="appFrame"
       src="https://script.google.com/macros/s/AKfycbwwy2B2Z45JllUyDoNFv-54AtPWhfkp73Phznyd7PFFtwqVLPoEcDhkf9lnw_3BfCNO/exec" 
       allow="geolocation; microphone; camera; clipboard-write"
       allowfullscreen="true">
     </iframe>
   </div>
+
+  <script>
+    // Otomatis menghilangkan spinner dan memicu animasi begitu iframe selesai dimuat
+    const iframe = document.getElementById('appFrame');
+    const loader = document.getElementById('loader');
+
+    iframe.onload = function() {
+      loader.classList.add('hidden');
+      iframe.classList.add('loaded');
+    };
+  </script>
 
 </body>
 </html>
